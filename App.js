@@ -17,12 +17,15 @@ export default function App() {
     const database = getDatabase(app); //tietokanta "kahva" jolla pääsee käsiksi tietokantaan
 
     const handleSave = () => {
-      if (products.amount && products.product){ //jos molemmat ovat tosi eli ei ole tyhjä merkkijono
-      push(ref(database, 'items/'), products)//viitataan tietokannassa olevaan 'items/', jonne viedään uusi tietue 
-      }else{
+      if (products.amount && products.product) {
+        const newProductRef = push(ref(database, 'items/'));
+        const newProduct = { ...products, id: newProductRef.key }; // Lisää id
+        newProductRef.set(newProduct);
+      } else {
         Alert.alert('Error', 'Type product and amount first');
       }
-    }
+    };
+    
     useEffect(() => { //onValue on kuuntelija
       const itemsRef = ref(database, 'items/');
       onValue(itemsRef, (snapshot) => { //snapshot on olio, jonka avulla päästään käsiksi kokoelman items sisältöön
@@ -61,6 +64,7 @@ export default function App() {
        <TextInput>Shopping list</TextInput>
     <Button onPress={handleSave} title="Save" /> 
     <FlatList 
+    keyExtractor={item => item.id.toString()}
   renderItem={({item}) => 
     <View style={styles.listContainer}>
       <Text style={{fontSize: 18}}>{item.product}, {item.amount}</Text>
@@ -71,6 +75,8 @@ export default function App() {
     </View>
   );
 }
+
+
 
 const styles = StyleSheet.create({
   container: {
